@@ -1,0 +1,61 @@
+#!/usr/bin/python
+# 
+# Simple program to get the current value of a cryptocurrency from Bittrex.com
+# 
+# Arguments:
+# -u            Format output as USD/fiat (2 decimal places)
+# -b            Format output as BTC/satoshi (8 decimal places)
+# -m <market>   Which market to show (e.g. "btc-ltc")
+
+import sys
+import requests
+import argparse
+#import bittrex
+#from bittrex.bittrex import Bittrex
+
+base_url = 'https://bittrex.com/api/v1.1/'
+
+def getticker(market):
+    url = base_url + 'public/getticker?market=' + market
+    response = requests.get(url)
+
+    if response.status_code != 200:
+        raise ApiError('GET /getmarkets/ {}'.format(response.status_code))
+    
+    market = response.json()
+    return market['result']['Last']
+
+def main(argv):
+    market = ''
+
+    parser = argparse.ArgumentParser()
+    subparsers = parser.add_subparsers(help = 'Which action to perform')
+
+    # ticker command
+    parser_ticker = subparsers.add_parser('ticker', help = 'Show a ticker')
+    parser_ticker.add_argument("basecurrency", help="Base currency symbol (e.g. BTC)")
+    parser_ticker.add_argument("marketcurrency", help="Market currency symbol (e.g. NEO)")
+    group = parser_ticker.add_mutually_exclusive_group()
+    group.add_argument("-f", help="Format output as fiat (2 decimal places) (default)", action="store_true", default=True)
+    group.add_argument("-s", help="Format output as satoshi (8 decimal places)", action="store_true", default=False)
+
+    # info command
+    parser_ticker = subparsers.add_parser('info', help = 'Show info from your account')
+    parser_ticker.add_argument("wallet", help="Which wallet to show.")
+
+
+    args = parser.parse_args()
+    
+
+    market = args.basecurrency + '-' + args.marketcurrency
+    result = getticker(market)
+
+    if args.s:
+        args.f = False
+        print('{:.8f}'.format(result))
+    if args.f:
+        print('{:.2f}'.format(result))
+
+
+if __name__ == "__main__":
+    main(sys.argv[1:])
