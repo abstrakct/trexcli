@@ -10,8 +10,8 @@
 import sys
 import requests
 import argparse
-#import bittrex
-#from bittrex.bittrex import Bittrex
+import json
+from bittrex import Bittrex
 
 base_url = 'https://bittrex.com/api/v1.1/'
 
@@ -28,8 +28,13 @@ def getticker(market):
 def main(argv):
     market = ''
 
+    with open("secrets.json") as secrets_file:
+        secrets = json.load(secrets_file)
+        secrets_file.close()
+    bittrex = Bittrex(secrets['key'], secrets['secret'])
+
     parser = argparse.ArgumentParser()
-    subparsers = parser.add_subparsers(help = 'Which action to perform')
+    subparsers = parser.add_subparsers(dest = 'command', help = 'Which action to perform')
 
     # ticker command
     parser_ticker = subparsers.add_parser('ticker', help = 'Show a ticker')
@@ -39,22 +44,31 @@ def main(argv):
     group.add_argument("-f", help="Format output as fiat (2 decimal places) (default)", action="store_true", default=True)
     group.add_argument("-s", help="Format output as satoshi (8 decimal places)", action="store_true", default=False)
 
-    # info command
-    parser_ticker = subparsers.add_parser('info', help = 'Show info from your account')
+    # wallet command
+    parser_ticker = subparsers.add_parser('wallet', help = 'Show info from your account')
     parser_ticker.add_argument("wallet", help="Which wallet to show.")
 
 
     args = parser.parse_args()
     
 
-    market = args.basecurrency + '-' + args.marketcurrency
-    result = getticker(market)
+    if args.command == 'ticker':
+        market = args.basecurrency + '-' + args.marketcurrency
+        result = getticker(market)
 
-    if args.s:
-        args.f = False
-        print('{:.8f}'.format(result))
-    if args.f:
-        print('{:.2f}'.format(result))
+        if args.s:
+            args.f = False
+            print('{:.8f}'.format(result))
+        if args.f:
+            print('{:.2f}'.format(result))
+
+    if args.command == 'wallet':
+        balance = bittrex.get_balance(args.wallet)
+        s = json.dumps(balance)
+
+        #print('{1}'.format(balance))
+        out = json.loads(s)
+        print(json.dumps(out, indent=4, sort_keys=True))
 
 
 if __name__ == "__main__":
