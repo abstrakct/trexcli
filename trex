@@ -1,23 +1,91 @@
 #!/usr/bin/python
 # 
-# Simple program to get the current value of a cryptocurrency from Bittrex.com
+# Simple program to interact with bittrex.com's API
+#
+# Needs python 3.5 or higher
 # 
-# Arguments:
-# -u            Format output as USD/fiat (2 decimal places)
-# -b            Format output as BTC/satoshi (8 decimal places)
-# -m <market>   Which market to show (e.g. "btc-ltc")
 
 import sys
 import argparse
 import json
 from bittrex import Bittrex
+from pathlib import Path
+from datetime import datetime
 
 base_url = 'https://bittrex.com/api/v1.1/'
+
+def print_ticker(bittrex, args):
+    market = args.basecurrency + '-' + args.marketcurrency
+    result = json.loads(json.dumps(bittrex.get_ticker(market)))
+    
+    if args.s:
+        args.f = False
+        print('{:.8f}'.format(result['result']['Last']))
+    if args.f:
+        print('{:.2f}'.format(result['result']['Last']))
+
+def print_wallet(bittrex, args):
+    out = json.loads(json.dumps(bittrex.get_balance(args.wallet)))
+    print("Currency:  ", out['result']['Currency'])
+    print("Balance:   ", out['result']['Balance'])
+    print("Available: ", out['result']['Available'])
+
+def print_balances(bittrex, args):
+    out = json.loads(json.dumps(bittrex.get_balances()))
+    for x in out['result']:
+        if args.n:
+            if x['Balance'] > 0:
+                doprint = True;
+            else:
+                doprint = False
+        else:
+            doprint = True
+
+        if doprint:
+            print("Currency:  ", x['Currency'])
+            print("Balance:   ", x['Balance'])
+            print("Available: ", x['Available'])
+            print()
+
+def print_orderhistory(bittrex, args):
+    if args.market == 'all':
+        out = json.loads(json.dumps(bittrex.get_order_history()))
+        print("Order history: ")
+    else:
+        out = json.loads(json.dumps(bittrex.get_order_history(args.market)))
+        print("Order history for {0}: ".format(args.market))
+
+    for x in out['result']:
+        timestamp = datetime.strptime(x['TimeStamp'], '%Y-%m-%dT%H:%M:%S.%f')
+        if x['OrderType'] == 'LIMIT_SELL':
+            print('{4} {0:10} Sold   {1} units at price {2} ({3} per unit)'.format(x['Exchange'], x['Quantity'], x['Price'], x['PricePerUnit'], timestamp.strftime('%Y-%m-%d %H:%M:%S')))
+        if x['OrderType'] == 'LIMIT_BUY':
+            print('{4} {0:10} Bought {1} units at price {2} ({3} per unit)'.format(x['Exchange'], x['Quantity'], x['Price'], x['PricePerUnit'], timestamp.strftime('%Y-%m-%d %H:%M:%S')))
+
+def print_openorders(bittrex, args):
+    if args.market == 'all':
+        out = json.loads(json.dumps(bittrex.get_open_orders()))
+    else:
+        out = json.loads(json.dumps(bittrex.get_open_orders(args.market)))
+    #print(json.dumps(out, indent=4, sort_keys=True))
+
+    print("Open orders: ")
+    for x in out['result']:
+        if x['OrderType'] == 'LIMIT_SELL':
+            print('{0}: Limit sell {1} units ({2} remaining) at price {3}'.format(x['Exchange'], x['QuantityRemaining'], x['Quantity'], x['Limit']))
+
+
 
 def main(argv):
     market = ''
 
-    with open("secrets.json") as secrets_file:
+    # Get user's home directory
+    home = str(Path.home())
+    # Create full filename for secrets file
+    # TODO: Add windows support. This only works on linux/unix now - I assume.
+    secrets_filename = home + "/.config/trex/secrets.json"
+
+    with open(secrets_filename) as secrets_file:
         secrets = json.load(secrets_file)
         secrets_file.close()
     bittrex = Bittrex(secrets['key'], secrets['secret'])
@@ -49,57 +117,24 @@ def main(argv):
     parser_openorders = subparsers.add_parser('openorders', help = 'Show open orders in your account')
     parser_openorders.add_argument("market", help = 'Show open orders only for this market (optional)', nargs='?', action = "store", default = 'all')
 
+    
+    # Parse the args, do appropriate action
     args = parser.parse_args()
     
-
     if args.command == 'ticker':
-        market = args.basecurrency + '-' + args.marketcurrency
-        result = json.loads(json.dumps(bittrex.get_ticker(market)))
-
-        if args.s:
-            args.f = False
-            print('{:.8f}'.format(result['result']['Last']))
-        if args.f:
-            print('{:.2f}'.format(result['result']['Last']))
+        print_ticker(bittrex, args)
 
     if args.command == 'wallet':
-        out = json.loads(json.dumps(bittrex.get_balance(args.wallet)))
-        #print(json.dumps(out, indent=4, sort_keys=True))
-        print("Currency:  ", out['result']['Currency'])
-        print("Balance:   ", out['result']['Balance'])
-        print("Available: ", out['result']['Available'])
+        print_wallet(bittrex, args)
 
     if args.command == 'balances':
-        out = json.loads(json.dumps(bittrex.get_balances()))
-        for x in out['result']:
-            if args.n:
-                if x['Balance'] > 0:
-                    doprint = True;
-                else:
-                    doprint = False
-            else:
-                doprint = True
-
-            if doprint:
-                print("Currency:  ", x['Currency'])
-                print("Balance:   ", x['Balance'])
-                print("Available: ", x['Available'])
-                print()
+        print_balances(bittrex, args)
 
     if args.command == 'orderhistory':
-        if args.market == 'all':
-            out = json.loads(json.dumps(bittrex.get_order_history()))
-        else:
-            out = json.loads(json.dumps(bittrex.get_order_history(args.market)))
-
-        print(json.dumps(out, indent=4, sort_keys=True))
+        print_orderhistory(bittrex, args)
 
     if args.command == 'openorders':
-        if args.market == 'all':
-            out = json.loads(json.dumps(bittrex.get_open_orders()))
-        else:
-            out = json.loads(json.dumps(bittrex.get_open_orders(args.market)))
-        print(json.dumps(out, indent=4, sort_keys=True))
+        print_openorders(bittrex, args)
 
 if __name__ == "__main__":
     main(sys.argv[1:])
