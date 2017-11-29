@@ -73,6 +73,8 @@ def print_openorders(bittrex, args):
     for x in out['result']:
         if x['OrderType'] == 'LIMIT_SELL':
             print('{0}: Limit sell {1} units ({2} remaining) at price {3}'.format(x['Exchange'], x['QuantityRemaining'], x['Quantity'], x['Limit']))
+        if x['OrderType'] == 'LIMIT_BUY':
+            print('{0}: Limit buy {1} units ({2} remaining) at price {3}'.format(x['Exchange'], x['QuantityRemaining'], x['Quantity'], x['Limit']))
 
 
 
