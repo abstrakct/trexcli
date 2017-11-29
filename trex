@@ -50,6 +50,7 @@ def main(argv):
 
     # balances command
     parser_balances = subparsers.add_parser('balances', help = 'Show all balances in your account')
+    parser_balances.add_argument("-n", help = 'Show only wallets with non-zero balance', action = "store_true", default = False)
 
     # order history command
     parser_orderhistory = subparsers.add_parser('orderhistory', help = 'Show recent order history for your account')
@@ -81,7 +82,20 @@ def main(argv):
 
     if args.command == 'balances':
         out = json.loads(json.dumps(bittrex.get_balances()))
-        print(json.dumps(out, indent=4, sort_keys=True))
+        for x in out['result']:
+            if args.n:
+                if x['Balance'] > 0:
+                    doprint = True;
+                else:
+                    doprint = False
+            else:
+                doprint = True
+
+            if doprint:
+                print("Currency:  ", x['Currency'])
+                print("Balance:   ", x['Balance'])
+                print("Available: ", x['Available'])
+                print()
 
     if args.command == 'orderhistory':
         if args.market == 'all':
