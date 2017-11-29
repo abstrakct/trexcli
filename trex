@@ -5,6 +5,9 @@
 # Needs python 3.5 or higher
 # 
 
+# TODO: error checking / check results of queries.
+# e.g. if there are no open orders, print "no open orders" or something.
+
 import sys
 import argparse
 import json
@@ -26,9 +29,7 @@ def print_ticker(bittrex, args):
 
 def print_wallet(bittrex, args):
     out = json.loads(json.dumps(bittrex.get_balance(args.wallet)))
-    print("Currency:  ", out['result']['Currency'])
-    print("Balance:   ", out['result']['Balance'])
-    print("Available: ", out['result']['Available'])
+    print('{0:5} {1:15.8f} total {2:15.8f} available'.format(out['result']['Currency'], out['result']['Balance'], out['result']['Available']))
 
 def print_balances(bittrex, args):
     out = json.loads(json.dumps(bittrex.get_balances()))
@@ -42,10 +43,7 @@ def print_balances(bittrex, args):
             doprint = True
 
         if doprint:
-            print("Currency:  ", x['Currency'])
-            print("Balance:   ", x['Balance'])
-            print("Available: ", x['Available'])
-            print()
+            print('{0:5} {1:15.8f} total {2:15.8f} available'.format(x['Currency'], x['Balance'], x['Available']))
 
 def print_orderhistory(bittrex, args):
     if args.market == 'all':
@@ -58,9 +56,9 @@ def print_orderhistory(bittrex, args):
     for x in out['result']:
         timestamp = datetime.strptime(x['TimeStamp'], '%Y-%m-%dT%H:%M:%S.%f')
         if x['OrderType'] == 'LIMIT_SELL':
-            print('{4} {0:10} Sold   {1} units at price {2} ({3} per unit)'.format(x['Exchange'], x['Quantity'], x['Price'], x['PricePerUnit'], timestamp.strftime('%Y-%m-%d %H:%M:%S')))
+            print('{4} {0:10} Sold   {1:15.8f} units at total price {2:10.8f} ({3:10.8f} per unit)'.format(x['Exchange'], x['Quantity'], x['Price'], x['PricePerUnit'], timestamp.strftime('%Y-%m-%d %H:%M:%S')))
         if x['OrderType'] == 'LIMIT_BUY':
-            print('{4} {0:10} Bought {1} units at price {2} ({3} per unit)'.format(x['Exchange'], x['Quantity'], x['Price'], x['PricePerUnit'], timestamp.strftime('%Y-%m-%d %H:%M:%S')))
+            print('{4} {0:10} Bought {1:15.8f} units at total price {2:10.8f} ({3:10.8f} per unit)'.format(x['Exchange'], x['Quantity'], x['Price'], x['PricePerUnit'], timestamp.strftime('%Y-%m-%d %H:%M:%S')))
 
 def print_openorders(bittrex, args):
     if args.market == 'all':
@@ -72,10 +70,24 @@ def print_openorders(bittrex, args):
     print("Open orders: ")
     for x in out['result']:
         if x['OrderType'] == 'LIMIT_SELL':
-            print('{0}: Limit sell {1} units ({2} remaining) at price {3}'.format(x['Exchange'], x['QuantityRemaining'], x['Quantity'], x['Limit']))
+            print('{0}: Limit sell {1:15.8f} units ({2:15.8f} remaining) at price {3:15.8f}'.format(x['Exchange'], x['QuantityRemaining'], x['Quantity'], x['Limit']))
         if x['OrderType'] == 'LIMIT_BUY':
-            print('{0}: Limit buy {1} units ({2} remaining) at price {3}'.format(x['Exchange'], x['QuantityRemaining'], x['Quantity'], x['Limit']))
+            print('{0}: Limit buy {1:15.8f} units ({2:15.8f} remaining) at price {3:15.8f}'.format(x['Exchange'], x['QuantityRemaining'], x['Quantity'], x['Limit']))
 
+def print_deposithistory(bittrex, args):
+    out = json.loads(json.dumps(bittrex.get_deposit_history()))
+
+    for x in out['result']:
+        timestamp = datetime.strptime(x['LastUpdated'], '%Y-%m-%dT%H:%M:%S.%f')
+        print('{0} {1:15.8f} {2} - Confirmations: {3}'.format(timestamp.strftime('%Y-%m-%d %H:%M:%S'), x['Amount'], x['Currency'], x['Confirmations']))
+    #print(json.dumps(out, indent=4))
+
+def print_withdrawalhistory(bittrex, args):
+    out = json.loads(json.dumps(bittrex.get_withdrawal_history()))
+
+    for x in out['result']:
+        timestamp = datetime.strptime(x['Opened'], '%Y-%m-%dT%H:%M:%S.%f')
+        print('{0} {1:15.8f} {2:5} - Address: {4} - Transaction cost: {3}'.format(timestamp.strftime('%Y-%m-%d %H:%M:%S'), x['Amount'], x['Currency'], x['TxCost'], x['Address']))
 
 
 def main(argv):
@@ -119,6 +131,11 @@ def main(argv):
     parser_openorders = subparsers.add_parser('openorders', help = 'Show open orders in your account')
     parser_openorders.add_argument("market", help = 'Show open orders only for this market (optional)', nargs='?', action = "store", default = 'all')
 
+    # deposit history command
+    parser_deposithistory = subparsers.add_parser('deposithistory', help = 'Show the deposit history of your account')
+    
+    # withdrawal history command
+    parser_withdrawalhistory = subparsers.add_parser('withdrawalhistory', help = 'Show the withdrawal history of your account')
     
     # Parse the args, do appropriate action
     args = parser.parse_args()
@@ -137,6 +154,12 @@ def main(argv):
 
     if args.command == 'openorders':
         print_openorders(bittrex, args)
+
+    if args.command == 'deposithistory':
+        print_deposithistory(bittrex, args)
+
+    if args.command == 'withdrawalhistory':
+        print_withdrawalhistory(bittrex, args)
 
 if __name__ == "__main__":
     main(sys.argv[1:])
