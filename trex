@@ -45,9 +45,19 @@ def main(argv):
     group.add_argument("-s", help="Format output as satoshi (8 decimal places)", action="store_true", default=False)
 
     # wallet command
-    parser_ticker = subparsers.add_parser('wallet', help = 'Show info from your account')
-    parser_ticker.add_argument("wallet", help="Which wallet to show.")
+    parser_wallet = subparsers.add_parser('wallet', help = 'Show info about a wallet in your account')
+    parser_wallet.add_argument("wallet", help="Which wallet to show.")
 
+    # balances command
+    parser_balances = subparsers.add_parser('balances', help = 'Show all balances in your account')
+
+    # order history command
+    parser_orderhistory = subparsers.add_parser('orderhistory', help = 'Show recent order history for your account')
+    parser_orderhistory.add_argument("market", help = 'Show order history only for this market (optional)', nargs='?', action = "store", default = 'all')
+
+    # open orders command
+    parser_openorders = subparsers.add_parser('openorders', help = 'Show open orders in your account')
+    parser_openorders.add_argument("market", help = 'Show open orders only for this market (optional)', nargs='?', action = "store", default = 'all')
 
     args = parser.parse_args()
     
@@ -63,13 +73,30 @@ def main(argv):
             print('{:.2f}'.format(result))
 
     if args.command == 'wallet':
-        balance = bittrex.get_balance(args.wallet)
-        s = json.dumps(balance)
+        out = json.loads(json.dumps(bittrex.get_balance(args.wallet)))
+        #print(json.dumps(out, indent=4, sort_keys=True))
+        print("Currency:  ", out['result']['Currency'])
+        print("Balance:   ", out['result']['Balance'])
+        print("Available: ", out['result']['Available'])
 
-        #print('{1}'.format(balance))
-        out = json.loads(s)
+    if args.command == 'balances':
+        out = json.loads(json.dumps(bittrex.get_balances()))
         print(json.dumps(out, indent=4, sort_keys=True))
 
+    if args.command == 'orderhistory':
+        if args.market == 'all':
+            out = json.loads(json.dumps(bittrex.get_order_history()))
+        else:
+            out = json.loads(json.dumps(bittrex.get_order_history(args.market)))
+
+        print(json.dumps(out, indent=4, sort_keys=True))
+
+    if args.command == 'openorders':
+        if args.market == 'all':
+            out = json.loads(json.dumps(bittrex.get_open_orders()))
+        else:
+            out = json.loads(json.dumps(bittrex.get_open_orders(args.market)))
+        print(json.dumps(out, indent=4, sort_keys=True))
 
 if __name__ == "__main__":
     main(sys.argv[1:])
