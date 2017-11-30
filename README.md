@@ -4,11 +4,9 @@
 trex is a python program that can get information from bittrex.com's API.
 
 ## Requirements
-trex uses the API bindings provided by https://github.com/ericsomdahl/python-bittrex - so you need to install that before using the program. It can be installed with pip or from https://pypi.python.org/pypi/python-bittrex
-
-trex also needs python 3.5 or higher to work correctly.
-
-I have personally only tested/used it on linux, but it should work on any platform as long as the above requirements are met.
+- API bindings provided by https://github.com/ericsomdahl/python-bittrex - so you need to install that before using the program. It can be installed with pip or from https://pypi.python.org/pypi/python-bittrex
+- python 3.5 or higher
+- I have personally only tested/used it on linux, but it should work on any platform as long as the above requirements are met.
 
 ## Why?
 I initially wrote this because I needed a way to get the current value of certain cryptocurrencies in plain and simple text format. Since I later on wanted simple access to information from my account on bittrex, it evolved to retrieve other kinds of information as well.
