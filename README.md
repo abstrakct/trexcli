@@ -46,6 +46,7 @@ Examples:
 `trex orderhistory neo` will show the (recent) order history for NEO in your account. Replace NEO with any currency you want.
 
 `trex openorders` will show any open orders you have.
+
 `trex openorders neo` will show any open orders you have for NEO. Replace NEO with any currency you want.
 
 `trex deposithistory` will show your deposit history.
