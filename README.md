@@ -1,7 +1,7 @@
 # trex
 
 ## What?
-trex is a python program that can get information from bittrex.com's API.
+trex is a python program that can get information from bittrex.com's API and display it as plain text.
 
 ## Requirements
 - API bindings provided by https://github.com/ericsomdahl/python-bittrex - so you need to install that before using the program. It can be installed with pip or from https://pypi.python.org/pypi/python-bittrex
