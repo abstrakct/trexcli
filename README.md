@@ -43,7 +43,10 @@ Examples:
 
 `trex orderhistory` will show the (recent) order history of your account. For some reason it seems to only go back about 1 month. I'll try to figure out how to go back further.
 
+`trex orderhistory neo` will show the (recent) order history for NEO in your account. Replace NEO with any currency you want.
+
 `trex openorders` will show any open orders you have.
+`trex openorders neo` will show any open orders you have for NEO. Replace NEO with any currency you want.
 
 `trex deposithistory` will show your deposit history.
 
