@@ -89,6 +89,10 @@ def print_withdrawalhistory(bittrex, args):
         timestamp = datetime.strptime(x['Opened'], '%Y-%m-%dT%H:%M:%S.%f')
         print('{0} {1:15.8f} {2:5} - Address: {4} - Transaction cost: {3}'.format(timestamp.strftime('%Y-%m-%d %H:%M:%S'), x['Amount'], x['Currency'], x['TxCost'], x['Address']))
 
+# def print_pendingdeposits(bittrex, args):
+    #out = json.loads(json.dumps(bittrex.get_pending_deposits()))
+    #print(json.dumps(out, indent=4))
+
 
 def main(argv):
     market = ''
@@ -137,6 +141,14 @@ def main(argv):
     # withdrawal history command
     parser_withdrawalhistory = subparsers.add_parser('withdrawalhistory', help = 'Show the withdrawal history of your account')
     
+    # pending deposits command
+    # Only available in API v2.0, so disabled for now
+    #parser_pendingdeposits = subparsers.add_parser('pendingdeposits', help = 'Show the pending deposits to your account')
+    
+    # pending withdrawals command
+    # Only available in API v2.0, so disabled for now
+    # parser_pendingwithdrawals = subparsers.add_parser('withdrawalhistory', help = 'Show the pending withdrawals from your account')
+    
     # Parse the args, do appropriate action
     args = parser.parse_args()
     
@@ -160,6 +172,9 @@ def main(argv):
 
     if args.command == 'withdrawalhistory':
         print_withdrawalhistory(bittrex, args)
+
+    #if args.command == 'pendingdeposits':
+        #print_pendingdeposits(bittrex, args)
 
 if __name__ == "__main__":
     main(sys.argv[1:])
