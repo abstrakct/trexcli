@@ -87,7 +87,7 @@ def print_withdrawalhistory(bittrex, args):
 
     for x in out['result']:
         timestamp = datetime.strptime(x['Opened'], '%Y-%m-%dT%H:%M:%S.%f')
-        print('{0} {1:15.8f} {2:5} - Address: {4} - Transaction cost: {3}'.format(timestamp.strftime('%Y-%m-%d %H:%M:%S'), x['Amount'], x['Currency'], x['TxCost'], x['Address']))
+        print('{0} {1:15.8f} {2:5} - Address: {4:42} - Transaction cost: {3}'.format(timestamp.strftime('%Y-%m-%d %H:%M:%S'), x['Amount'], x['Currency'], x['TxCost'], x['Address'].rjust(42)))
 
 # def print_pendingdeposits(bittrex, args):
     #out = json.loads(json.dumps(bittrex.get_pending_deposits()))
