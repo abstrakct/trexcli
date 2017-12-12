@@ -16,7 +16,7 @@ For example, if I want to see the balance of all my wallets on bittrex, I used t
 For now it does NOT support placing buy/sell orders on bittrex, although that would be fairly easy to implement. This is because of the potential security risk involved, and the risk involved in giving a 3rd party app access to buying/selling/withdrawing from your account. I will do more research to find out how it can be done securely before implementing it.
 
 ## How?
-`trex -h` is good starting point!
+`trex` is good starting point!
 
 But let's look at some examples.
 
@@ -52,3 +52,17 @@ Examples:
 `trex deposithistory` will show your deposit history.
 
 `trex withdrawalhistory` will show your withdrawal history.
+
+The following are short aliases for the various commands:
+
+t = ticker
+
+w = wallet
+
+h = orderhistory
+
+o = openorders
+
+dh = deposithistory
+
+wh = withdrawalhistory
