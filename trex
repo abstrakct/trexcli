@@ -149,6 +149,11 @@ def main(argv):
     # Only available in API v2.0, so disabled for now
     # parser_pendingwithdrawals = subparsers.add_parser('withdrawalhistory', help = 'Show the pending withdrawals from your account')
     
+    # print help and exit if no arguments given
+    if len(sys.argv)==1:
+        parser.print_help()
+        sys.exit(1)
+
     # Parse the args, do appropriate action
     args = parser.parse_args()
     
