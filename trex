@@ -108,38 +108,45 @@ def main(argv):
         secrets_file.close()
     bittrex = Bittrex(secrets['key'], secrets['secret'])
 
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(allow_abbrev=True)
     subparsers = parser.add_subparsers(dest = 'command', help = 'Which action to perform')
 
     # ticker command
-    parser_ticker = subparsers.add_parser('ticker', help = 'Show a ticker')
+    parser_ticker = subparsers.add_parser('ticker', help = 'Show a ticker', aliases=['t'])
     parser_ticker.add_argument("basecurrency", help="Base currency symbol (e.g. BTC)")
     parser_ticker.add_argument("marketcurrency", help="Market currency symbol (e.g. NEO)")
+    parser_ticker.set_defaults(func=print_ticker)
     group = parser_ticker.add_mutually_exclusive_group()
     group.add_argument("-s", help="Format output as satoshi (8 decimal places) (default)", action="store_true", default=True)
     group.add_argument("-f", help="Format output as fiat (2 decimal places)", action="store_true", default=False)
 
     # wallet command
-    parser_wallet = subparsers.add_parser('wallet', help = 'Show info about a wallet in your account')
+    parser_wallet = subparsers.add_parser('wallet', help = 'Show info about a wallet in your account', aliases=['w'])
     parser_wallet.add_argument("wallet", help="Which wallet to show.")
+    parser_wallet.set_defaults(func=print_wallet)
 
     # balances command
-    parser_balances = subparsers.add_parser('balances', help = 'Show all balances in your account')
+    parser_balances = subparsers.add_parser('balances', help = 'Show all balances in your account', aliases=['b'])
     parser_balances.add_argument("-n", help = 'Show only wallets with non-zero balance', action = "store_true", default = False)
+    parser_balances.set_defaults(func=print_balances)
 
     # order history command
-    parser_orderhistory = subparsers.add_parser('orderhistory', help = 'Show recent order history for your account')
+    parser_orderhistory = subparsers.add_parser('orderhistory', help = 'Show recent order history for your account', aliases=['h'])
     parser_orderhistory.add_argument("market", help = 'Show order history only for this market (optional)', nargs='?', action = "store", default = 'all')
+    parser_orderhistory.set_defaults(func=print_orderhistory)
 
     # open orders command
-    parser_openorders = subparsers.add_parser('openorders', help = 'Show open orders in your account')
+    parser_openorders = subparsers.add_parser('openorders', help = 'Show open orders in your account', aliases=['o'])
     parser_openorders.add_argument("market", help = 'Show open orders only for this market (optional)', nargs='?', action = "store", default = 'all')
+    parser_openorders.set_defaults(func=print_openorders)
 
     # deposit history command
-    parser_deposithistory = subparsers.add_parser('deposithistory', help = 'Show the deposit history of your account')
+    parser_deposithistory = subparsers.add_parser('deposithistory', help = 'Show the deposit history of your account', aliases=['dh'])
+    parser_deposithistory.set_defaults(func=print_deposithistory)
     
     # withdrawal history command
-    parser_withdrawalhistory = subparsers.add_parser('withdrawalhistory', help = 'Show the withdrawal history of your account')
+    parser_withdrawalhistory = subparsers.add_parser('withdrawalhistory', help = 'Show the withdrawal history of your account', aliases=['wh'])
+    parser_withdrawalhistory.set_defaults(func=print_withdrawalhistory)
     
     # pending deposits command
     # Only available in API v2.0, so disabled for now
@@ -156,30 +163,8 @@ def main(argv):
 
     # Parse the args, do appropriate action
     args = parser.parse_args()
+    args.func(bittrex, args)
     
-    if args.command == 'ticker':
-        print_ticker(bittrex, args)
-
-    if args.command == 'wallet':
-        print_wallet(bittrex, args)
-
-    if args.command == 'balances':
-        print_balances(bittrex, args)
-
-    if args.command == 'orderhistory':
-        print_orderhistory(bittrex, args)
-
-    if args.command == 'openorders':
-        print_openorders(bittrex, args)
-
-    if args.command == 'deposithistory':
-        print_deposithistory(bittrex, args)
-
-    if args.command == 'withdrawalhistory':
-        print_withdrawalhistory(bittrex, args)
-
-    #if args.command == 'pendingdeposits':
-        #print_pendingdeposits(bittrex, args)
 
 if __name__ == "__main__":
     main(sys.argv[1:])
