@@ -33,7 +33,7 @@ To retrieve information from your account, you need to do the following:
 
 Now you can read info from your account!
 
-Examples:
+### Examples:
 
 `trex balances` will show the balance of all wallets where you have or have had anything.
 
@@ -53,7 +53,8 @@ Examples:
 
 `trex withdrawalhistory` will show your withdrawal history.
 
-The following are short aliases for the various commands:
+### Command aliases
+You don't have to type the long command every time! Use these aliases instead if you want!
 
 t = ticker
 
